@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+backend/property_documents/
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+*.sqlite3
+frontend/dist/
+*_backup*.sql
+*_before_*.sql
+*.backup
+frontend/src/*-backup.*
+frontend/src/*-before-*.*
+/database.py

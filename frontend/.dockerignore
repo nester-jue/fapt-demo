@@ -1,0 +1,5 @@
+node_modules/
+dist/
+src/App-backup.jsx
+src/App-before-dashboard.jsx
+src/style.css.backup

@@ -1,0 +1,83 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:?Set VITE_API_URL in the root .env file}
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-8301}:8000"
+    environment:
+      DB_HOST: ${DB_HOST:?Set DB_HOST in the root .env file}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:?Set DB_USER in the root .env file}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the root .env file}
+      DB_NAME: ${DB_NAME:?Set DB_NAME in the root .env file}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in the root .env file}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Set CORS_ORIGINS in the root .env file}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PYTHONUNBUFFERED: "1"
+      PROPERTY_DOCUMENTS_DIR: /data/property_documents
+    volumes:
+      - fapt_property_documents:/data/property_documents
+    depends_on:
+      database:
+        condition: service_healthy
+      document-storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  document-storage-init:
+    image: alpine:3.21
+    user: "0:0"
+    command:
+      - sh
+      - -c
+      - "mkdir -p /data/property_documents && chown 10001:10001 /data/property_documents && chmod 700 /data/property_documents"
+    volumes:
+      - fapt_property_documents:/data/property_documents
+    restart: "no"
+
+  database:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${DB_USER:?Set DB_USER in the root .env file}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the root .env file}
+      POSTGRES_DB: ${DB_NAME:?Set DB_NAME in the root .env file}
+    volumes:
+      - fapt_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  fapt_postgres_data:
+  fapt_property_documents:
