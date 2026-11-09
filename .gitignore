@@ -30,3 +30,5 @@ frontend/src/*-before-*.*
 
 # Root database file
 /database.py
+# Local database backups
+*-backup*.sql
