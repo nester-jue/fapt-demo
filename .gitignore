@@ -1,17 +1,32 @@
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
+
+# Property documents
 backend/property_documents/
+
+# Python
 __pycache__/
 *.py[cod]
 *.db
 *.sqlite
 *.sqlite3
+.venv/
+venv/
+
+# Frontend
+frontend/node_modules/
 frontend/dist/
+
+# Database backups
 *_backup*.sql
 *_before_*.sql
 *.backup
+
+# Frontend backup files
 frontend/src/*-backup.*
 frontend/src/*-before-*.*
+
+# Root database file
 /database.py
-frontend/node_modules/
