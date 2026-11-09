@@ -1,0 +1,11 @@
+NEXA database migrations
+
+Run `alembic upgrade head` from the backend directory before starting the API.
+Docker Compose runs this command before starting Uvicorn.
+
+The initial migration creates a new, empty database schema. An existing
+database is adopted only when all current NEXA tables and expected columns
+are present. Mismatched and partial schemas are rejected; back up the
+database and write a reviewed migration for them. The initial migration is
+intentionally irreversible to prevent accidental deletion of persistent
+tables and records.
